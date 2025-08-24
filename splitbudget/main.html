@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Splitter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-table th {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .result-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .result-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .share-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .share-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .share-pdf {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .share-pdf:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .share-whatsapp {
+            background: #25d366;
+            color: white;
+        }
+        
+        .share-whatsapp:hover {
+            background: #128c7e;
+            transform: translateY(-2px);
+        }
+        
+        .share-email {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .share-email:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .summary-item strong {
+            color: #333;
+        }
+        
+        @media (max-width: 600px) {
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .share-options {
+                flex-direction: column;
+            }
+            
+            .share-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Budget Splitter</h1>
+            <p>Split expenses easily among friends, roommates, or colleagues</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-group">
+                <label for="totalExpenses">Total Expenses (₹)</label>
+                <input type="number" id="totalExpenses" placeholder="Enter total amount" min="0" step="0.01">
+            </div>
+            
+            <div class="input-group">
+                <label for="numPeople">Number of People</label>
+                <input type="number" id="numPeople" placeholder="How many people to split between?" min="1">
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="calculateSplit()">
+                    <i class="fas fa-calculator"></i> Calculate Split
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+            
+            <div class="result-section" id="resultSection">
+                <h2>💰 Expense Split Results</h2>
+                
+                <div class="summary">
+                    <div class="summary-item">
+                        <strong>Total Amount:</strong>
+                        <span id="summaryTotal">₹0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Number of People:</strong>
+                        <span id="summaryPeople">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Each Person Pays:</strong>
+                        <span id="summaryEach" style="color: #28a745; font-weight: bold;">₹0.00</span>
+                    </div>
+                </div>
+                
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Person</th>
+                            <th>Amount Owed</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody">
+                    </tbody>
+                </table>
+                
+                <div class="share-options">
+                    <button class="share-btn share-pdf" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button class="share-btn share-whatsapp" onclick="shareViaWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> Share via WhatsApp
+                    </button>
+                    <button class="share-btn share-email" onclick="shareViaEmail()">
+                        <i class="fas fa-envelope"></i> Share via Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        function calculateSplit() {
+            const totalExpenses = parseFloat(document.getElementById('totalExpenses').value);
+            const numPeople = parseInt(document.getElementById('numPeople').value);
+            const resultTableBody = document.getElementById('resultTableBody');
+            const resultSection = document.getElementById('resultSection');
+            
+            // Validation
+            if (isNaN(totalExpenses) || totalExpenses <= 0) {
+                alert('Please enter a valid total expense amount.');
+                return;
+            }
+            
+            if (isNaN(numPeople) || numPeople <= 0) {
+                alert('Please enter a valid number of people.');
+                return;
+            }
+            
+            // Calculate amount per person
+            const amountPerPerson = (totalExpenses / numPeople).toFixed(2);
+            
+            // Update summary
+            document.getElementById('summaryTotal').textContent = `₹${totalExpenses.toFixed(2)}`;
+            document.getElementById('summaryPeople').textContent = numPeople;
+            document.getElementById('summaryEach').textContent = `₹${amountPerPerson}`;
+            
+            // Generate table rows
+            resultTableBody.innerHTML = '';
+            for (let i = 1; i <= numPeople; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>Person ${i}</td>
+                    <td>₹${amountPerPerson}</td>
+                    <td><span style="color: #28a745;">●</span> Pending</td>
+                `;
+                resultTableBody.appendChild(row);
+            }
+            
+            // Show result section
+            resultSection.style.display = 'block';
+        }
+        
+        function resetForm() {
+            document.getElementById('totalExpenses').value = '';
+            document.getElementById('numPeople').value = '';
+            document.getElementById('resultSection').style.display = 'none';
+        }
+        
+        function exportToPDF() {
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.setTextColor(40, 40, 40);
+            doc.text('Budget Splitter Results', 105, 20, { align: 'center' });
+            
+            // Add summary
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+            
+            // Summary box
+            doc.setDrawColor(79, 172, 254);
+            doc.setFillColor(248, 249, 250);
+            doc.roundedRect(20, 40, 170, 30, 3, 3, 'F');
+            
+            doc.setFontSize(14);
+            doc.setTextColor(40, 40, 40);
+            doc.text('Summary', 105, 50, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text(`Total Amount: ₹${document.getElementById('summaryTotal').textContent.replace('₹', '')}`, 30, 60);
+            doc.text(`Number of People: ${document.getElementById('summaryPeople').textContent}`, 30, 68);
+            doc.setTextColor(40, 167, 69);
+            doc.text(`Each Person Pays: ₹${document.getElementById('summaryEach').textContent.replace('₹', '')}`, 30, 76);
+            
+            // Table header
+            doc.setTextColor(255, 255, 255);
+            doc.setFillColor(79, 172, 254);
+            doc.roundedRect(20, 85, 170, 10, 3, 3, 'F');
+            
+            doc.text('Person', 30, 91);
+            doc.text('Amount Owed', 100, 91);
+            doc.text('Status', 160, 91);
+            
+            // Table rows
+            const rows = document.querySelectorAll('#resultTableBody tr');
+            let yPosition = 100;
+            
+            doc.setTextColor(40, 40, 40);
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                doc.text(cells[0].textContent, 30, yPosition);
+                doc.text(cells[1].textContent, 100, yPosition);
+                doc.setTextColor(40, 167, 69);
+                doc.text('Pending', 160, yPosition);
+                doc.setTextColor(40, 40, 40);
+                yPosition += 8;
+                
+                // Add page if needed
+                if (yPosition > 270 && index < rows.length - 1) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+            });
+            
+            // Save the PDF
+            doc.save('Budget-Split-Results.pdf');
+        }
+        
+        function shareViaWhatsApp() {
+            const total = document.getElementById('summaryTotal').textContent;
+            const people = document.getElementById('summaryPeople').textContent;
+            const each = document.getElementById('summaryEach').textContent;
+            
+            const message = `💰 Budget Split Results:\nTotal: ${total}\nPeople: ${people}\nEach pays: ${each}\n\nGenerated via Budget Splitter App`;
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        }
+        
+        function shareViaEmail() {
+            const total = document.getElementById('summaryTotal').textContent;
+            const people = document.getElementById('summaryPeople').textContent;
+            const each = document.getElementById('summaryEach').textContent;
+            
+            const subject = 'Budget Splitter Results';
+            const body = `Hello,\n\nHere are the budget split results:\n\nTotal Amount: ${total}\nNumber of People: ${people}\nEach Person Pays: ${each}\n\nBest regards,\nBudget Splitter App`;
+            
+            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+    </script>
+</body>
+</html>
